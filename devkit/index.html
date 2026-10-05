@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevKit — Free Online Developer Tools (JSON, JWT, Base64, UUID, QR &amp; more)</title>
+  <meta name="description" content="DevKit offers dozens of free online developer tools: JSON formatter & validator, free JWT decoder online, Base64, URL encoder, UUID, password, hash, QR code generators, Unix timestamp converters and more. All client-side, fast and private.">
+  <meta name="keywords" content="jwt decoder online, json formatter, json validator, base64 decode, uuid generator, qr code generator, unix timestamp converter, regex tester, password generator, md5 hash online">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="DevKit — Free Online Developer Tools">
+  <meta property="og:description" content="JSON, JWT, Base64, UUID, QR codes, timestamps & more — dozens of privacy-friendly developer tools that run entirely in your browser.">
+  <meta property="og:type" content="website">
+
+  <!-- Structured data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "DevKit — Free Online Developer Tools",
+    "description": "Dozens of free browser-based developer tools: JSON formatter/validator, JWT decoder, Base64, UUID, QR code, hash and timestamp utilities.",
+    "url": "./"
+  }
+  </script>
+</head>
+<body>
+  <header id="dk-header">
+    <div class="header-inner">
+      <a class="logo" href="#/">🛠️ <span><span class="dk-badge">DevKit</span><small>Free Online Developer Tools</small></span></a>
+      <nav id="dk-nav" aria-label="Tools navigation"></nav>
+    </div>
+  </header>
+
+  <main id="app" role="main"><!-- SPA renders here --></main>
+
+  <footer id="dk-footer"></footer>
+
+  <!-- Ad placeholder: replace with your network's async snippet (AdSense etc.) -->
+  <!--
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
+  -->
+
+  <script src="js/tools.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/tools/json.js"></script>
+  <script src="js/tools/jwt.js"></script>
+  <script src="js/tools/code.js"></script>
+  <script src="js/tools/generators.js"></script>
+  <script src="js/tools/time.js"></script>
+  <script>DevKit.init();</script>
+</body>
+</html>
