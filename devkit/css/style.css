@@ -407,16 +407,26 @@ body.nav-open .nav-drop a { padding: 10px 9px; font-size: 14.5px; min-height: 44
 .popular-seo a { display: inline-flex; align-items: center; gap: 6px; }
 .popular-seo .sticker { --sz: 18px; }
 
-/* ---------- ads ---------- */
-.ad-slot {
-  display: flex; align-items: center; justify-content: center; gap: var(--s-2);
-  border: 1px dashed var(--border-strong); border-radius: var(--r-md);
-  color: var(--muted); font-size: var(--fs-xs); text-align: center;
-  padding: var(--s-4); margin: var(--s-5) auto;
-  background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 12px, var(--surface-2) 12px, var(--surface-2) 24px);
+/* ---------- ads (Google AdSense) ---------- */
+.ad-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-block: var(--s-6, 24px) var(--s-7, 32px); margin-inline: auto;
+  max-width: min(970px, 100%); padding-inline: var(--s-3);
+  overflow: hidden;                 /* keep ad content inside the layout */
+  min-height: 100px;                /* reserve space → no CLS when the ad loads */
 }
-.ad-top { max-width: 970px; min-height: 90px; }
-.ad-inline { max-width: 728px; min-height: 60px; }
+@media (min-width: 768px) { .ad-wrap { min-height: 120px; } }
+.ad-label {
+  font-size: var(--fs-xs); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); opacity: .85; user-select: none;
+}
+.ad-wrap ins.adsbygoogle { display: block; width: 100%; max-width: 100%; }
+/* collapse gracefully when unfilled (no fill / blocked by adblock) — no ugly empty box */
+.ad-wrap [data-ad-status="unfilled"] { display: none !important; }
+.ad-wrap.ad-empty { min-height: 0; }
+.ad-wrap.ad-hidden { display: none; }
+/* policy: at most 2 ads visible on mobile — hide the last one */
+@media (max-width: 640px) { #app > .ad-wrap:last-of-type { display: none; } }
 
 /* ==================== 7. TOOL PAGE ==================== */
 .breadcrumb {
@@ -589,6 +599,10 @@ td[data-hash], .list-output div, .swatch { cursor: pointer; }
 }
 .seo-copy h2, .seo-copy h3 { color: var(--text); }
 .seo-copy ul { padding-left: 20px; }
+.seo-copy a { text-decoration: underline; }
+/* static info pages (privacy / about / contact / terms) */
+.info-body { border-top: none; padding-top: 0; max-width: 760px; }
+.info-body code { font-family: var(--mono); background: var(--surface-2); padding: 2px 6px; border-radius: 6px; font-size: .9em; }
 
 /* ==================== 8. FOOTER ==================== */
 #dk-footer {

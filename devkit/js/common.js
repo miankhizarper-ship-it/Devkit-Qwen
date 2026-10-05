@@ -278,5 +278,58 @@ window.DK = (function () {
     return b64urlEncodeBytes(new TextEncoder().encode(str));
   }
 
-  return { esc, h, copy, hlJSON, hlGeneric, formatHTML, formatCSS, formatJS, formatSQL, toYAML, yamlOut, csvCell, b64urlDecode, b64urlEncode, b64urlEncodeBytes, md5 };
+  /* ================= Google AdSense (SPA-safe) =================
+     One place to change the IDs. NOTE: AdSense slots are normally
+     10-digit numbers — if no ad renders, confirm the exact
+     data-ad-slot from the AdSense code snippet and update it here. */
+  const ADS = { client: "ca-pub-6506538093886638", slot: "18190346125" };
+
+  /* Markup for one responsive ad unit. Never place inside a tool panel. */
+  function adSlot() {
+    return `<div class="ad-wrap" aria-label="Advertisement">` +
+      `<span class="ad-label">Advertisement</span>` +
+      `<ins class="adsbygoogle" style="display:block"` +
+      ` data-ad-client="${ADS.client}" data-ad-slot="${ADS.slot}"` +
+      ` data-ad-format="auto" data-full-width-responsive="true"></ins>` +
+      `</div>`;
+  }
+
+  /* Fill any unfilled <ins.adsbygoogle> inside root (defaults to #app).
+     Called after every route render. Safe with blocked/ad-blocked script:
+     everything is wrapped in try/catch and each <ins> is pushed at most once. */
+  function loadAds(root) {
+    const scope = root || document.getElementById("app");
+    if (!scope || !scope.querySelectorAll) return;
+    // SPA guard: drop ad requests that were pending when the route changed
+    try { if (window.adsbygoogle) window.adsbygoogle.loaded = true; } catch (e) {}
+    const insList = [...scope.querySelectorAll("ins.adsbygoogle")];
+    const lazy = "IntersectionObserver" in window;
+    let visibleCount = 0;
+    const maxPerRoute = 3; // hard cap: max 3 per page (mobile CSS hides the extras)
+    insList.forEach(ins => {
+      if (ins.dataset.dkQueued || ins.hasAttribute("data-adsbygoogle-status")) return;
+      if (visibleCount >= maxPerRoute) {
+        const wrap = ins.closest(".ad-wrap");
+        if (wrap) wrap.remove(); // never stack more than the allowed number of ads
+        return;
+      }
+      visibleCount++;
+      const fill = () => {
+        if (ins.dataset.dkQueued || ins.hasAttribute("data-adsbygoogle-status")) return;
+        ins.dataset.dkQueued = "1";
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { /* blocked by adblock — .ad-wrap collapses via CSS */ }
+      };
+      if (!lazy) { fill(); return; }
+      try {
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(en => {
+            if (en.isIntersecting) { io.disconnect(); fill(); }
+          });
+        }, { rootMargin: "200px 0px" });
+        io.observe(ins.closest(".ad-wrap") || ins);
+      } catch (e) { fill(); }
+    });
+  }
+
+  return { esc, h, copy, hlJSON, hlGeneric, formatHTML, formatCSS, formatJS, formatSQL, toYAML, yamlOut, csvCell, b64urlDecode, b64urlEncode, b64urlEncodeBytes, md5, ADS, adSlot, loadAds };
 })();

@@ -99,6 +99,7 @@ window.DevKit = (function () {
   };
 
   const IC = () => window.DKIcons;
+  const AD = () => (window.DK ? window.DK.adSlot() : "");
 
   /* ---------- theme toggle ---------- */
   function initThemeToggle() {
@@ -222,15 +223,21 @@ window.DevKit = (function () {
       <div class="footer-cols">
         <div class="footer-brand">
           <div class="logo">${IC().icon("", 34)}<span><span class="dk-badge">DevKit</span><small>Free Online Developer Tools</small></span></div>
-          <p>Dozens of fast, privacy-friendly developer tools. Everything runs 100% in your browser — no data ever leaves your machine.</p>
+          <p>Dozens of fast developer tools. Tool input is processed entirely in your browser — nothing you paste is uploaded. The site is supported by advertising.</p>
         </div>
         ${categories.map(c => `
           <div>
             <h4>${IC().catIconHTML(c.id, 18)} ${c.name}</h4>
-            ${c.tools.map(t => `<a href="#/${t.id}">${IC().icon(t.id, 16)} ${t.name}</a>`).join("")}
-          </div>`).join("")}
+            ${c.tools.map(t => `<a href="#/${t.id}">${IC().icon(t.id, 16)} ${t.name}</a>`).join("")}</div>`).join("")}
+        <div>
+          <h4>${IC().i("file", "ic-sm")} Site</h4>
+          <a href="#/about">${IC().i("star", "ic-sm")} About</a>
+          <a href="#/privacy">${IC().i("lock", "ic-sm")} Privacy Policy</a>
+          <a href="#/terms">${IC().i("check", "ic-sm")} Terms of Use</a>
+          <a href="#/contact">${IC().i("wrench", "ic-sm")} Contact</a>
+        </div>
       </div>
-      <p class="footer-note">© ${new Date().getFullYear()} DevKit — Free Online Developer Tools. All processing happens client-side.</p>`;
+      <p class="footer-note">© ${new Date().getFullYear()} DevKit — Free Online Developer Tools. Tool data is processed client-side; ads are served by Google.</p>`;
   }
 
   /* ---------- page mount helpers ---------- */
@@ -253,7 +260,7 @@ window.DevKit = (function () {
           </div>
         </header>
         <div id="tool-ui"></div>
-        <aside class="ad-slot ad-inline" aria-hidden="true">${IC().i("star", "ic-sm")} Advertisement space (728×90)</aside>
+        ${AD()}
         ${relatedToolsHTML(toolId)}
         <section class="seo-copy" id="seo-copy"></section>
       </article>`;
@@ -262,7 +269,21 @@ window.DevKit = (function () {
     if (impl) impl(ui); else ui.innerHTML = "<p>Tool coming soon.</p>";
     window.scrollTo(0, 0);
     wrapTables(main);
+    DKloadAds();
+    // SEO copy is injected by the tool implementation *after* mount — add a
+    // clearly separated ad at the end of the SEO section (max-3 cap enforced in DK.loadAds).
+    setTimeout(() => {
+      const seo = document.getElementById("seo-copy");
+      if (seo && seo.innerHTML.trim()) {
+        const holder = document.createElement("div");
+        holder.innerHTML = AD();
+        seo.appendChild(holder);
+        DKloadAds();
+      }
+    }, 0);
   }
+
+  function DKloadAds() { try { if (window.DK) window.DK.loadAds(document.getElementById("app")); } catch (e) {} }
 
   /* ---------- put tables in a horizontal scroll wrapper (responsive) ---------- */
   function wrapTables(root) {
@@ -303,12 +324,12 @@ window.DevKit = (function () {
       <div class="hero">
         <div class="hero-stickers">${IC().icon("jwt-decoder", 44)}${IC().icon("json-formatter", 44)}${IC().icon("base64", 44)}${IC().icon("uuid", 44)}${IC().icon("qr-code", 44)}${IC().icon("unix-timestamp", 44)}</div>
         <h1><span class="dk-badge">DevKit</span> — Free Online Developer Tools</h1>
-        <p>Dozens of fast, privacy-friendly tools for developers. <strong>Everything runs in your browser</strong> — nothing is uploaded.</p>
+        <p>Dozens of fast tools for developers. <strong>Tool data stays in your browser</strong> — nothing you paste is uploaded. The site itself is supported by ads.</p>
         <div class="search-wrap">${IC().i("search", "search-ic")}<input id="home-search" class="search" type="search" placeholder="Search a tool… e.g. “jwt decoder”, “base64”" autocomplete="off" aria-label="Search tools"></div>
         <div class="hero-badges chips-row">${categories.map(c => `<a class="chip" href="#cat-${c.id}">${IC().catIconHTML(c.id, 18)} ${c.name}</a>`).join("")}</div>
-        <div class="hero-badges"><span>${IC().i("check", "ic-sm")} 100% client-side</span><span>${IC().i("zap", "ic-sm")} Instant results</span><span>${IC().i("lock", "ic-sm")} No sign-up</span></div>
+        <div class="hero-badges"><span>${IC().i("check", "ic-sm")} Client-side tools</span><span>${IC().i("zap", "ic-sm")} Instant results</span><span>${IC().i("lock", "ic-sm")} No sign-up</span></div>
       </div>
-      <aside class="ad-slot ad-top" aria-hidden="true">${IC().i("star", "ic-sm")} Advertisement space (970×250)</aside>
+      ${AD()}
       <div id="home-cats">
         ${categories.map(c => `
           <section class="cat-block" id="cat-${c.id}">
@@ -337,7 +358,8 @@ window.DevKit = (function () {
           <a href="#/password">${IC().icon("password", 18)} strong password generator</a> ·
           <a href="#/jwt-validator">${IC().icon("jwt-validator", 18)} jwt verifier online</a>
         </p>
-      </section>`;
+      </section>
+      ${AD()}`;
     const s = document.getElementById("home-search");
     s.addEventListener("input", () => {
       const q = s.value.trim().toLowerCase();
@@ -348,12 +370,102 @@ window.DevKit = (function () {
         const anyVisible = [...block.querySelectorAll(".tool-card")].some(c => c.style.display !== "none");
         block.style.display = anyVisible ? "" : "none";
       });
+      // hide the top ad while search results are filtered (policy: no ads on empty/partial states)
+      const topAd = document.querySelector("#app > .ad-wrap");
+      if (topAd) topAd.classList.toggle("ad-hidden", !!q);
     });
+    DKloadAds();
   }
 
+  /* ---------- static info pages (AdSense policy: privacy, about, contact, terms) ---------- */
+  const PRIVACY_LINKS = `Google's tools (AdSense, etc.) may use cookies to serve ads based on a user's prior visits to this or other websites. Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">google.com/settings/ads</a>, and read Google's actual privacy practices at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a>.`;
+
+  const infoPages = {
+    "privacy": {
+      name: "Privacy Policy",
+      desc: "What data DevKit sees, cookies and Google AdSense.",
+      body: `<h2>DevKit Privacy Policy</h2>
+        <p><em>Last updated: October 2026</em></p>
+        <h3>Your tool data stays in your browser</h3>
+        <p>All DevKit tools (JSON formatter, JWT decoder, Base64, hash, password generator, etc.) run entirely client-side. The text, tokens and secrets you paste into a tool are processed locally by JavaScript in your browser and are never transmitted to, logged by, or stored on any server we control.</p>
+        <h3>Advertising &amp; cookies</h3>
+        <p>This website uses <strong>Google AdSense</strong> to display advertisements. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this or other websites. These cookies enable Google to personalize the ads you see (and measure ad performance). No personal information is collected by the tools themselves.</p>
+        <p>${PRIVACY_LINKS}</p>
+        <h3>Local storage</h3>
+        <p>We store small UI preferences (your dark/light theme choice) in your browser's localStorage. This never leaves your device and contains no personal data.</p>
+        <h3>Analytics</h3>
+        <p>We do not run our own analytics scripts. Any measurement performed by Google's ad tags is governed by Google's privacy policies (linked above).</p>
+        <h3>Consent (EEA / UK / Switzerland)</h3>
+        <p>For visitors from the European Economic Area, the United Kingdom and Switzerland, a consent message provided by Google's certified consent management platform (enabled via AdSense → Privacy &amp; messaging) governs cookie use before personalized ads are shown.</p>
+        <h3>Contact</h3>
+        <p>Questions about privacy? Use the details on our <a href="#/contact">Contact page</a>.</p>`
+    },
+    "about": {
+      name: "About DevKit",
+      desc: "Why DevKit exists and how it works.",
+      body: `<h2>About DevKit</h2>
+        <p>DevKit is a collection of free online developer utilities — JSON formatting &amp; conversion, JWT decoding/signing/verification, Base64 and URL encoding, code formatters, UUID/password/hash/QR generators and timestamp converters.</p>
+        <h3>How it works</h3>
+        <p>DevKit is a single-page app written in plain HTML, CSS and JavaScript with no frameworks and no build step. Every tool runs locally in your browser, so results appear instantly and your data never leaves your machine.</p>
+        <h3>Who maintains it</h3>
+        <p>DevKit is an independent project maintained by developers, for developers. It is supported by unobtrusive display advertising, which keeps every tool free.</p>
+        <h3>Our promises</h3>
+        <ul><li>Free tools, no sign-up, no account required.</li><li>Tool input/output is processed only in your browser.</li><li>Ads are clearly labelled and never interfere with the tools.</li></ul>`
+    },
+    "contact": {
+      name: "Contact",
+      desc: "Report bugs or request a new tool.",
+      body: `<h2>Contact DevKit</h2>
+        <p>We'd love your feedback — bug reports, missing features or tool requests.</p>
+        <h3>Email</h3>
+        <p>For privacy and anti-spam reasons, reach us at <code>hello@devkit.tools</code> (replace <code>devkit.tools</code> with the domain you are reading this on if it differs).</p>
+        <h3>What to include</h3>
+        <ul><li>Which tool the issue affects (e.g. “JWT Validator”).</li><li>What you expected vs what happened.</li><li>Your browser and OS.</li></ul>
+        <p class="hint">Please don't send real production secrets in bug reports — sample values are enough to reproduce almost any issue.</p>`
+    },
+    "terms": {
+      name: "Terms of Use",
+      desc: "The rules for using DevKit's free tools.",
+      body: `<h2>DevKit Terms of Use</h2>
+        <p><em>Last updated: October 2026</em></p>
+        <h3>Use as-is</h3>
+        <p>DevKit's tools are provided “as is”, without warranty of any kind. They are intended for convenience and education; always validate critical output (signatures, hashes, conversions) against authoritative libraries or servers before relying on it in production.</p>
+        <h3>Acceptable use</h3>
+        <p>You may use DevKit for legitimate development work. Do not use the site or its content for unlawful purposes, do not attempt to disrupt the service, and do not scrape or mirror the tools in ways that conflict with Google AdSense program policies.</p>
+        <h3>Intellectual property</h3>
+        <p>The DevKit name, design and source code of this site are © DevKit. Tool outputs you generate belong to you.</p>
+        <h3>Third parties</h3>
+        <p>Ads served by Google and linked third-party sites are governed by their own terms and privacy policies.</p>
+        <h3>Changes</h3>
+        <p>We may update these terms; continued use of the site means you accept the current version published here.</p>`
+    }
+  };
+
+  function mountInfo(pageId) {
+    const p = infoPages[pageId];
+    const main = document.getElementById("app");
+    document.title = `${p.name} — DevKit Free Online Developer Tools`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.content = `${p.desc} DevKit — free online developer tools.`;
+    renderHeader(null);
+    main.innerHTML = `
+      <article class="tool-page info-page">
+        <div class="breadcrumb"><a href="#/">${IC().i("wrench", "ic-sm")} DevKit Home</a> › <span class="crumb-cur">${p.name}</span></div>
+        <header class="tool-head">
+          ${IC().catIconHTML("json", 52)}
+          <div><h1>${p.name}</h1><p class="tagline">${p.desc}</p></div>
+        </header>
+        <section class="seo-copy info-body">${p.body}</section>
+      </article>`;
+    window.scrollTo(0, 0);
+    DKloadAds();
+  }
+
+  /* ---------- routing ---------- */
   function route() {
     const hash = location.hash.replace(/^#\/?/, "");
     if (!hash || hash === "home") renderHome();
+    else if (infoPages[hash]) mountInfo(hash);
     else mountTool(hash);
   }
 
@@ -369,5 +481,5 @@ window.DevKit = (function () {
     });
   }
 
-  return { init, categories, toolMap, related };
+  return { init, categories, toolMap, related, infoPages };
 })();

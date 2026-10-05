@@ -12,6 +12,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+  <!-- Google AdSense account verification -->
+  <meta name="google-adsense-account" content="ca-pub-6506538093886638">
+  <!-- Google AdSense loader (async, non-blocking) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6506538093886638" crossorigin="anonymous"></script>
   <script>/* set theme before first paint — avoids a flash of the wrong theme */
   try {
     var dkT = localStorage.getItem("devkit-theme");
@@ -22,7 +26,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="DevKit — Free Online Developer Tools">
-  <meta property="og:description" content="JSON, JWT, Base64, UUID, QR codes, timestamps & more — dozens of privacy-friendly developer tools that run entirely in your browser.">
+  <meta property="og:description" content="JSON, JWT, Base64, UUID, QR codes, timestamps & more — dozens of free developer tools that run entirely in your browser. The site is supported by ads.">
   <meta property="og:type" content="website">
 
   <!-- Structured data for SEO -->
@@ -55,9 +59,13 @@
 
   <footer id="dk-footer"></footer>
 
-  <!-- Ad placeholder: replace with your network's async snippet (AdSense etc.) -->
+  <!-- Ad placeholder removed: real Google AdSense snippet is loaded in <head>. -->
+
   <!--
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
+    TODO (AdSense privacy): enable Google's free certified CMP (consent management
+    platform) from the AdSense dashboard → Privacy & messaging → "GDPR message for
+    EEA/UK/Switzerland visitors". Once enabled there, AdSense shows the consent
+    dialog automatically; a custom banner is intentionally NOT used.
   -->
 
   <script src="js/icons.js"></script>
