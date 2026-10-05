@@ -81,9 +81,9 @@ window.ToolImpls = window.ToolImpls || {};
   function segmentBoxes(ui, { header, payload }, token) {
     const [h, p, s] = token.trim().split(".");
     ui.innerHTML += `
-      <div class="jwt-seg seg-header"><div class="seg-title" style="color:#79c0ff">HEADER (algorithm & type)</div><div>${D.esc(h)}</div></div>
-      <div class="jwt-seg seg-payload"><div class="seg-title" style="color:#ffa657">PAYLOAD (claims)</div><div>${D.esc(p)}</div></div>
-      <div class="jwt-seg seg-signature"><div class="seg-title" style="color:#f85149">SIGNATURE</div><div>${D.esc(s || "(missing)")} <span class="hint">— cannot be decoded, only verified</span></div></div>
+      <div class="jwt-seg seg-header"><div class="seg-title">HEADER (algorithm & type)</div><div>${D.esc(h)}</div></div>
+      <div class="jwt-seg seg-payload"><div class="seg-title">PAYLOAD (claims)</div><div>${D.esc(p)}</div></div>
+      <div class="jwt-seg seg-signature"><div class="seg-title">SIGNATURE</div><div>${D.esc(s || "(missing)")} <span class="hint">— cannot be decoded, only verified</span></div></div>
       <label class="field">Decoded Header</label>
       <pre class="code-out">${D.hlJSON(JSON.stringify(header, null, 2))}</pre>
       <label class="field">Decoded Payload</label>

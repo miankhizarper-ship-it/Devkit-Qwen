@@ -100,13 +100,78 @@ window.DevKit = (function () {
 
   const IC = () => window.DKIcons;
 
+  /* ---------- theme toggle ---------- */
+  function initThemeToggle() {
+    const btn = document.getElementById("dk-theme");
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = "1";
+    const mqLight = window.matchMedia("(prefers-color-scheme: light)");
+    // follow the OS while the user has not chosen a theme explicitly
+    mqListen(mqLight, () => {
+      let saved = null;
+      try { saved = localStorage.getItem("devkit-theme"); } catch (e) {}
+      if (saved !== "light" && saved !== "dark") applyTheme(mqLight.matches ? "light" : "dark");
+    });
+    btn.onclick = () => {
+      const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      applyTheme(next);
+      try { localStorage.setItem("devkit-theme", next); } catch (e) { /* private mode — ignore */ }
+    };
+  }
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    const btn = document.getElementById("dk-theme");
+    if (btn) btn.setAttribute("aria-label", t === "light" ? "Switch to dark theme" : "Switch to light theme");
+  }
+  function mqListen(mq, fn) { if (mq.addEventListener) mq.addEventListener("change", fn); else if (mq.addListener) mq.addListener(fn); }
+
+  /* ---------- mobile drawer ---------- */
+  function closeMenu() {
+    document.body.classList.remove("nav-open");
+    const ov = document.getElementById("dk-overlay");
+    if (ov) ov.hidden = true;
+    const b = document.getElementById("dk-burger");
+    if (b) { b.setAttribute("aria-expanded", "false"); b.setAttribute("aria-label", "Open menu"); }
+  }
+  function openMenu() {
+    document.body.classList.add("nav-open");
+    const ov = document.getElementById("dk-overlay");
+    if (ov) ov.hidden = false;
+    const b = document.getElementById("dk-burger");
+    if (b) { b.setAttribute("aria-expanded", "true"); b.setAttribute("aria-label", "Close menu"); }
+    const first = document.querySelector("#dk-nav .nav-group-btn");
+    if (first) first.focus();
+  }
+  function initMenu() {
+    const burger = document.getElementById("dk-burger");
+    const overlay = document.getElementById("dk-overlay");
+    if (!burger) return;
+    burger.onclick = e => {
+      e.stopPropagation();
+      document.body.classList.contains("nav-open") ? closeMenu() : openMenu();
+    };
+    if (overlay) overlay.onclick = closeMenu;
+    document.addEventListener("keydown", e => {
+      if (!document.body.classList.contains("nav-open")) return;
+      if (e.key === "Escape") { closeMenu(); burger.focus(); return; }
+      if (e.key === "Tab") { // simple focus trap inside the drawer
+        const nav = document.getElementById("dk-nav");
+        const items = [...(nav ? nav.querySelectorAll("a, button") : [])].filter(el => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+  }
+
   /* ---------- shell rendering ---------- */
   function renderHeader(activeId) {
     const nav = document.getElementById("dk-nav");
     if (!nav) return;
     nav.innerHTML = categories.map(c => `
       <div class="nav-group">
-        <button class="nav-group-btn" data-cat="${c.id}">${IC().catIconHTML(c.id, 20)} <span>${c.name}</span></button>
+        <button class="nav-group-btn" data-cat="${c.id}" aria-haspopup="true" aria-expanded="false">${IC().catIconHTML(c.id, 20)} <span>${c.name}</span></button>
         <div class="nav-drop">
           ${c.tools.map(t => `<a href="#/${t.id}" class="${t.id === activeId ? "active" : ""}">${IC().icon(t.id, 24)}<span>${t.name}</span></a>`).join("")}
         </div>
@@ -115,19 +180,20 @@ window.DevKit = (function () {
       btn.addEventListener("click", e => {
         e.stopPropagation();
         const drop = btn.nextElementSibling;
-        document.querySelectorAll(".nav-drop.open").forEach(d => { if (d !== drop) d.classList.remove("open"); });
-        drop.classList.toggle("open");
+        const willOpen = !drop.classList.contains("open");
+        nav.querySelectorAll(".nav-drop.open").forEach(d => {
+          d.classList.remove("open");
+          d.previousElementSibling.setAttribute("aria-expanded", "false");
+        });
+        if (willOpen) { drop.classList.add("open"); btn.setAttribute("aria-expanded", "true"); }
       });
     });
-    document.addEventListener("click", () => document.querySelectorAll(".nav-drop.open").forEach(d => d.classList.remove("open")));
-    // mobile hamburger
-    const burger = document.getElementById("dk-burger");
-    if (burger) {
-      burger.onclick = e => {
-        e.stopPropagation();
-        document.body.classList.toggle("nav-open");
-      };
-    }
+    document.addEventListener("click", () => nav.querySelectorAll(".nav-drop.open").forEach(d => {
+      d.classList.remove("open");
+      d.previousElementSibling.setAttribute("aria-expanded", "false");
+    }));
+    initMenu();
+    initThemeToggle();
   }
 
   function relatedToolsHTML(toolId) {
@@ -195,6 +261,36 @@ window.DevKit = (function () {
     const impl = window.ToolImpls && window.ToolImpls[toolId];
     if (impl) impl(ui); else ui.innerHTML = "<p>Tool coming soon.</p>";
     window.scrollTo(0, 0);
+    wrapTables(main);
+  }
+
+  /* ---------- put tables in a horizontal scroll wrapper (responsive) ---------- */
+  function wrapTables(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll("table.data").forEach(t => {
+      if (t.parentElement && t.parentElement.classList.contains("table-wrap")) return;
+      const w = document.createElement("div");
+      w.className = "table-wrap";
+      t.parentNode.insertBefore(w, t);
+      w.appendChild(t);
+    });
+  }
+  // auto-wrap tables that tools render into their output containers after mount
+  function initTableObserver() {
+    if (!("MutationObserver" in window)) return;
+    const app = document.getElementById("app");
+    if (!app || app.dataset.tableObs) return;
+    app.dataset.tableObs = "1";
+    new MutationObserver(muts => {
+      for (const m of muts) {
+        for (const n of m.addedNodes) {
+          if (n.nodeType === 1) {
+            if (n.matches && n.matches("table.data")) wrapTables(n.parentElement);
+            else if (n.querySelectorAll) wrapTables(n);
+          }
+        }
+      }
+    }).observe(app, { childList: true, subtree: true });
   }
 
   function renderHome() {
@@ -205,10 +301,11 @@ window.DevKit = (function () {
     renderHeader(null);
     main.innerHTML = `
       <div class="hero">
-        <div class="hero-stickers">${IC().icon("jwt-decoder", 40)}${IC().icon("json-formatter", 40)}${IC().icon("base64", 40)}${IC().icon("uuid", 40)}${IC().icon("qr-code", 40)}${IC().icon("unix-timestamp", 40)}</div>
+        <div class="hero-stickers">${IC().icon("jwt-decoder", 44)}${IC().icon("json-formatter", 44)}${IC().icon("base64", 44)}${IC().icon("uuid", 44)}${IC().icon("qr-code", 44)}${IC().icon("unix-timestamp", 44)}</div>
         <h1><span class="dk-badge">DevKit</span> — Free Online Developer Tools</h1>
         <p>Dozens of fast, privacy-friendly tools for developers. <strong>Everything runs in your browser</strong> — nothing is uploaded.</p>
-        <div class="search-wrap">${IC().i("search", "search-ic")}<input id="home-search" class="search" type="search" placeholder="Search a tool… e.g. “jwt decoder”, “base64”" autocomplete="off"></div>
+        <div class="search-wrap">${IC().i("search", "search-ic")}<input id="home-search" class="search" type="search" placeholder="Search a tool… e.g. “jwt decoder”, “base64”" autocomplete="off" aria-label="Search tools"></div>
+        <div class="hero-badges chips-row">${categories.map(c => `<a class="chip" href="#cat-${c.id}">${IC().catIconHTML(c.id, 18)} ${c.name}</a>`).join("")}</div>
         <div class="hero-badges"><span>${IC().i("check", "ic-sm")} 100% client-side</span><span>${IC().i("zap", "ic-sm")} Instant results</span><span>${IC().i("lock", "ic-sm")} No sign-up</span></div>
       </div>
       <aside class="ad-slot ad-top" aria-hidden="true">${IC().i("star", "ic-sm")} Advertisement space (970×250)</aside>
@@ -262,12 +359,13 @@ window.DevKit = (function () {
 
   function init() {
     renderFooter();
+    initTableObserver();
     route();
-    window.addEventListener("hashchange", () => { document.body.classList.remove("nav-open"); route(); });
+    window.addEventListener("hashchange", () => { closeMenu(); route(); });
     // close mobile menu when a nav link is tapped
     document.addEventListener("click", e => {
       const a = e.target.closest && e.target.closest("#dk-nav a");
-      if (a) document.body.classList.remove("nav-open");
+      if (a) closeMenu();
     });
   }
 
