@@ -1,6 +1,8 @@
 /* ============ JWT tool family (decoder, generator, validator, inspector) ============ */
 window.ToolImpls = window.ToolImpls || {};
 (function () {
+  const ICO = () => window.DKIcons;
+
   const D = window.DK;
 
   /* ---------- crypto helpers: HS256/384/512 sign & verify via WebCrypto ---------- */
@@ -67,10 +69,10 @@ window.ToolImpls = window.ToolImpls || {};
   }
 
   function expiryBadge(payload) {
-    if (typeof payload.exp !== "number") return `<div class="status warn">⚠ This token has no <code>exp</code> claim — it never expires.</div>`;
+    if (typeof payload.exp !== "number") return `<div class="status warn">${ICO().i("alert","ic-sm")} This token has no <code>exp</code> claim — it never expires.</div>`;
     const now = Math.floor(Date.now() / 1000);
-    if (payload.exp < now) return `<div class="status err">✗ Token EXPIRED ${new Date(payload.exp * 1000).toLocaleString()} (${Math.round((now - payload.exp) / 60)} min ago)</div>`;
-    return `<div class="status ok">✓ Token is valid until ${new Date(payload.exp * 1000).toLocaleString()} (in ${Math.max(1, Math.round((payload.exp - now) / 60))} min)</div>`;
+    if (payload.exp < now) return `<div class="status err">${ICO().i("x","ic-sm")} Token EXPIRED ${new Date(payload.exp * 1000).toLocaleString()} (${Math.round((now - payload.exp) / 60)} min ago)</div>`;
+    return `<div class="status ok">${ICO().i("check","ic-sm")} Token is valid until ${new Date(payload.exp * 1000).toLocaleString()} (in ${Math.max(1, Math.round((payload.exp - now) / 60))} min)</div>`;
   }
 
   // signed with the secret "your-256-bit-secret" so the sample verify passes
@@ -97,9 +99,9 @@ window.ToolImpls = window.ToolImpls || {};
         <label class="field">Paste a JWT (JSON Web Token)</label>
         <textarea id="t-in" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"></textarea>
         <div class="btn-row">
-          <button class="btn" id="t-decode">Decode token</button>
-          <button class="btn secondary" id="t-sample">Load sample</button>
-          <button class="btn secondary" id="t-copy">Copy payload JSON</button>
+          <button class="btn" id="t-decode">${ICO().i("key","ic-sm")} Decode token</button>
+          <button class="btn secondary" id="t-sample">${ICO().i("file","ic-sm")} Load sample</button>
+          <button class="btn secondary" id="t-copy">${ICO().i("copy","ic-sm")} Copy payload JSON</button>
         </div>
         <div id="t-status"></div>
         <div id="t-result"></div>
@@ -112,11 +114,11 @@ window.ToolImpls = window.ToolImpls || {};
       if (!tok) { st.innerHTML = `<div class="status warn">Paste a token first.</div>`; return; }
       try {
         const { header, payload } = decodeParts(tok);
-        st.innerHTML = `<div class="status ok">✓ Decoded successfully. Note: decoding does <em>not</em> verify the signature — use the <a href="#/jwt-validator">JWT Validator</a> for that.</div>` + expiryBadge(payload);
+        st.innerHTML = `<div class="status ok">${ICO().i("check","ic-sm")} Decoded successfully. Note: decoding does <em>not</em> verify the signature — use the <a href="#/jwt-validator">JWT Validator</a> for that.</div>` + expiryBadge(payload);
         lastPayload = JSON.stringify(payload, null, 2);
         segmentBoxes(res, { header, payload }, tok);
       } catch (e) {
-        st.innerHTML = `<div class="status err">✗ ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelector("#t-decode").onclick = run;
@@ -147,8 +149,8 @@ window.ToolImpls = window.ToolImpls || {};
         <label class="field">Payload JSON (claims)</label>
         <textarea id="g-payload" style="min-height:140px"></textarea>
         <div class="btn-row">
-          <button class="btn" id="g-sign">Sign token</button>
-          <button class="btn secondary" id="g-copy">Copy token</button>
+          <button class="btn" id="g-sign">${ICO().i("lock","ic-sm")} Sign token</button>
+          <button class="btn secondary" id="g-copy">${ICO().i("copy","ic-sm")} Copy token</button>
         </div>
         <div id="g-status"></div>
         <label class="field">Your JWT</label>
@@ -175,9 +177,9 @@ window.ToolImpls = window.ToolImpls || {};
         const sig = D.b64urlEncodeBytes(await hmac(header.alg, ui.querySelector("#g-secret").value, h + "." + p));
         const token = `${h}.${p}.${sig}`;
         out.textContent = token;
-        st.innerHTML = `<div class="status ok">✓ Token signed with ${header.alg}. <a href="#/jwt-decoder">Decode it</a> or <a href="#/jwt-validator">verify it</a>.</div>`;
+        st.innerHTML = `<div class="status ok">${ICO().i("check","ic-sm")} Token signed with ${header.alg}. <a href="#/jwt-decoder">Decode it</a> or <a href="#/jwt-validator">verify it</a>.</div>`;
       } catch (e) {
-        st.innerHTML = `<div class="status err">✗ ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelector("#g-sign").onclick = sign;
@@ -195,8 +197,8 @@ window.ToolImpls = window.ToolImpls || {};
         <label class="field">Secret (HMAC shared secret)</label>
         <input type="text" id="val-s" placeholder="your-256-bit-secret">
         <div class="btn-row">
-          <button class="btn" id="val-run">Verify signature</button>
-          <button class="btn secondary" id="val-sample">Load sample pair</button>
+          <button class="btn" id="val-run">${ICO().i("shield","ic-sm")} Verify signature</button>
+          <button class="btn secondary" id="val-sample">${ICO().i("file","ic-sm")} Load sample pair</button>
         </div>
         <div id="val-status"></div>
         <div id="val-result"></div>
@@ -208,11 +210,11 @@ window.ToolImpls = window.ToolImpls || {};
         const { header, payload } = decodeParts(t.value);
         const ok = await verifyHS(t.value, sec.value);
         st.innerHTML = ok
-          ? `<div class="status ok">✓ Signature VERIFIED with ${header.alg} — the token was definitely signed with this secret and has not been tampered with.</div>` + expiryBadge(payload)
-          : `<div class="status err">✗ Signature INVALID — wrong secret, or the token was modified after signing.</div>` + expiryBadge(payload);
+          ? `<div class="status ok">${ICO().i("check","ic-sm")} Signature VERIFIED with ${header.alg} — the token was definitely signed with this secret and has not been tampered with.</div>` + expiryBadge(payload)
+          : `<div class="status err">${ICO().i("x","ic-sm")} Signature INVALID — wrong secret, or the token was modified after signing.</div>` + expiryBadge(payload);
         segmentBoxes(res, { header, payload }, t.value);
       } catch (e) {
-        st.innerHTML = `<div class="status err">✗ ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelector("#val-run").onclick = run;
@@ -228,7 +230,7 @@ window.ToolImpls = window.ToolImpls || {};
       <div class="tool-panel">
         <label class="field">JWT token to inspect</label>
         <textarea id="i-in" spellcheck="false" placeholder="Paste token…"></textarea>
-        <div class="btn-row"><button class="btn" id="i-run">Inspect token</button><button class="btn secondary" id="i-sample">Load sample</button></div>
+        <div class="btn-row"><button class="btn" id="i-run">${ICO().i("eye","ic-sm")} Inspect token</button><button class="btn secondary" id="i-sample">${ICO().i("file","ic-sm")} Load sample</button></div>
         <div id="i-status"></div>
         <div id="i-result"></div>
       </div>`;
@@ -248,12 +250,12 @@ window.ToolImpls = window.ToolImpls || {};
         const algNote = /^HS/.test(header.alg || "") ? "symmetric HMAC — anyone with the secret can both sign and verify."
           : /^(RS|ES|PS|Ed)/.test(header.alg || "") ? "asymmetric — verified with a public key (see issuer JWKS)." : "unknown";
         st.innerHTML = `
-          <div class="status ok">✓ Structure OK — ${size} bytes · alg=<code>${D.esc(header.alg || "?")}</code> (${algNote})</div>
-          ${issues.length ? `<div class="status warn"><strong>Security review:</strong><ul style="margin:6px 0 0">${issues.map(x => `<li>${x}</li>`).join("")}</ul></div>` : `<div class="status ok">✓ No structural issues found.</div>`}
+          <div class="status ok">${ICO().i("check","ic-sm")} Structure OK — ${size} bytes · alg=<code>${D.esc(header.alg || "?")}</code> (${algNote})</div>
+          ${issues.length ? `<div class="status warn"><strong>Security review:</strong><ul style="margin:6px 0 0">${issues.map(x => `<li>${x}</li>`).join("")}</ul></div>` : `<div class="status ok">${ICO().i("check","ic-sm")} No structural issues found.</div>`}
           ${expiryBadge(payload)}`;
         segmentBoxes(res, { header, payload }, inp.value.trim());
       } catch (e) {
-        st.innerHTML = `<div class="status err">✗ ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelector("#i-run").onclick = run;

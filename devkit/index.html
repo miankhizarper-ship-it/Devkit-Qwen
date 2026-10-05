@@ -6,7 +6,10 @@
   <title>DevKit — Free Online Developer Tools (JSON, JWT, Base64, UUID, QR &amp; more)</title>
   <meta name="description" content="DevKit offers dozens of free online developer tools: JSON formatter & validator, free JWT decoder online, Base64, URL encoder, UUID, password, hash, QR code generators, Unix timestamp converters and more. All client-side, fast and private.">
   <meta name="keywords" content="jwt decoder online, json formatter, json validator, base64 decode, uuid generator, qr code generator, unix timestamp converter, regex tester, password generator, md5 hash online">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232f81f7'/><stop offset='1' stop-color='%23a371f7'/></linearGradient></defs><rect width='64' height='64' rx='14' fill='url(%23g)'/><path d='M25 22l-8 10 8 10M39 22l8 10-8 10' stroke='white' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 
   <!-- Open Graph -->
@@ -28,8 +31,12 @@
 <body>
   <header id="dk-header">
     <div class="header-inner">
-      <a class="logo" href="#/">🛠️ <span><span class="dk-badge">DevKit</span><small>Free Online Developer Tools</small></span></a>
+      <a class="logo" href="#/">
+        <span class="sticker logo-sticker" style="--sz:34px;background:linear-gradient(135deg,#2f81f7,#a371f7)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></svg></span>
+        <span><span class="dk-badge">DevKit</span><small>Free Online Developer Tools</small></span>
+      </a>
       <nav id="dk-nav" aria-label="Tools navigation"></nav>
+      <button id="dk-burger" class="burger" aria-label="Toggle menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
   </header>
 
@@ -42,6 +49,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
   -->
 
+  <script src="js/icons.js"></script>
   <script src="js/tools.js"></script>
   <script src="js/common.js"></script>
   <script src="js/tools/json.js"></script>

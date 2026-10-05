@@ -13,9 +13,10 @@ window.DK = (function () {
   function copy(text, btn) {
     navigator.clipboard.writeText(text).then(() => {
       if (!btn) return;
-      const old = btn.textContent;
-      btn.textContent = "Copied ✓";
-      setTimeout(() => (btn.textContent = old), 1200);
+      const old = btn.innerHTML;
+      btn.innerHTML = window.DKIcons ? `${window.DKIcons.i("check", "ic-sm")} Copied` : "Copied ✓";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.innerHTML = old; btn.classList.remove("copied"); }, 1200);
     }).catch(() => {
       const ta = document.createElement("textarea");
       ta.value = text; document.body.appendChild(ta); ta.select();

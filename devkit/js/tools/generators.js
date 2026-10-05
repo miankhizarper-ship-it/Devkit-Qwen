@@ -1,6 +1,8 @@
 /* ============ Generators: UUID, Password, Hash, Lorem Ipsum, QR, Color Palette ============ */
 window.ToolImpls = window.ToolImpls || {};
 (function () {
+  const ICO = () => window.DKIcons;
+
   const D = window.DK;
 
   /* ================= UUID Generator ================= */
@@ -11,7 +13,7 @@ window.ToolImpls = window.ToolImpls || {};
           <div><label class="field">How many?</label><input type="number" id="u-count" value="5" min="1" max="1000"></div>
           <div><label class="field">Format</label><select id="u-fmt"><option value="std">Standard (lowercase, hyphens)</option><option value="upper">UPPERCASE</option><option value="nohyphen">No hyphens</option><option value="braces">{curly braces}</option></select></div>
         </div>
-        <div class="btn-row"><button class="btn" id="u-gen">Generate UUIDs</button><button class="btn secondary" id="u-copy">Copy all</button></div>
+        <div class="btn-row"><button class="btn" id="u-gen">${ICO().i("refresh","ic-sm")} Generate UUIDs</button><button class="btn secondary" id="u-copy">${ICO().i("copy","ic-sm")} Copy all</button></div>
         <div class="list-output" id="u-out"></div>
         <p class="hint">Click any UUID to copy it. Version 4 (random) per RFC 4122, generated with crypto-secure randomness.</p>
       </div>`;
@@ -61,7 +63,7 @@ window.ToolImpls = window.ToolImpls || {};
           <label><input type="checkbox" id="p-sy" checked> !@#$% symbols</label>
           <label><input type="checkbox" id="p-nc"> No confusing (l1IO0)</label>
         </div>
-        <div class="btn-row"><button class="btn" id="p-gen">Regenerate</button><button class="btn secondary" id="p-copy">Copy first</button></div>
+        <div class="btn-row"><button class="btn" id="p-gen">${ICO().i("refresh","ic-sm")} Regenerate</button><button class="btn secondary" id="p-copy">${ICO().i("copy","ic-sm")} Copy first</button></div>
         <div class="list-output" id="p-list" style="margin-top:8px"></div>
       </div>`;
     document.getElementById("seo-copy").innerHTML = `<h2>Strong Random Password Generator</h2><p>Create cryptographically strong passwords using your browser's <code>crypto.getRandomValues</code> — never <code>Math.random</code>. Choose length, character sets and batch size, and read the live Shannon-entropy estimate (bits) to judge strength. Nothing is transmitted or stored anywhere.</p>`;
@@ -117,7 +119,7 @@ window.ToolImpls = window.ToolImpls || {};
       <div class="tool-panel">
         <label class="field">Input text</label>
         <textarea id="h-in" spellcheck="false" style="min-height:120px">Hello DevKit!</textarea>
-        <div class="btn-row"><button class="btn" id="h-run">Compute hashes</button><button class="btn secondary" id="h-clear">Clear</button></div>
+        <div class="btn-row"><button class="btn" id="h-run">${ICO().i("asterisk","ic-sm")} Compute hashes</button><button class="btn secondary" id="h-clear">${ICO().i("minus","ic-sm")} Clear</button></div>
         <div id="h-out"></div>
         <p class="hint">MD5 is computed locally in pure JS (for checksums only — <strong>never for passwords</strong>). SHA-1/256/384/512 use the browser's Web Crypto API.</p>
       </div>`;
@@ -130,9 +132,13 @@ window.ToolImpls = window.ToolImpls || {};
       const text = ui.querySelector("#h-in").value;
       const out = ui.querySelector("#h-out");
       const rows = [["MD5", md5(text)]];
-      for (const alg of ["SHA-1", "SHA-256", "SHA-384", "SHA-512"]) {
-        const buf = await crypto.subtle.digest(alg, new TextEncoder().encode(text));
-        rows.push([alg, [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("")]);
+      if (window.crypto && crypto.subtle) {
+        for (const alg of ["SHA-1", "SHA-256", "SHA-384", "SHA-512"]) {
+          try {
+            const buf = await crypto.subtle.digest(alg, new TextEncoder().encode(text));
+            rows.push([alg, [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("")]);
+          } catch (e) { rows.push([alg, "unavailable"]); }
+        }
       }
       out.innerHTML = `<table class="data"><tr><th>Algorithm</th><th>Hex digest</th></tr>` +
         rows.map(([a, h]) => `<tr><td>${a}</td><td class="mono" title="Click to copy" data-hash="${h}" style="cursor:pointer">${h}</td></tr>`).join("") + `</table>`;
@@ -154,7 +160,7 @@ window.ToolImpls = window.ToolImpls || {};
           <div><label class="field">Unit</label><select id="l-unit"><option>paragraphs</option><option>sentences</option><option>words</option></select></div>
           <div><label class="field">&nbsp;</label><div class="checkbox-row" style="margin:0"><label><input type="checkbox" id="l-classic" checked> Start with “Lorem ipsum…”</label></div></div>
         </div>
-        <div class="btn-row"><button class="btn" id="l-gen">Generate</button><button class="btn secondary" id="l-copy">Copy text</button></div>
+        <div class="btn-row"><button class="btn" id="l-gen">${ICO().i("text","ic-sm")} Generate</button><button class="btn secondary" id="l-copy">${ICO().i("copy","ic-sm")} Copy text</button></div>
         <pre class="code-out" id="l-out" style="min-height:200px;white-space:pre-wrap"></pre>
       </div>`;
     document.getElementById("seo-copy").innerHTML = `<h2>Lorem Ipsum Generator — Dummy Placeholder Text</h2><p>Generate classic Latin placeholder text for mockups and designs: paragraphs, sentences or exact word counts. Use it to fill HTML templates, wireframes and portfolio drafts without distracting readers with real content.</p>`;
@@ -198,7 +204,7 @@ window.ToolImpls = window.ToolImpls || {};
           <div><label class="field">Size (px per module)</label><input type="number" id="q-scale" value="8" min="2" max="24"></div>
           <div><label class="field">Error correction</label><select id="q-ecc"><option value="L">L — 7%</option><option value="M" selected>M — 15%</option><option value="Q">Q — 25%</option><option value="H">H — 30%</option></select></div>
         </div>
-        <div class="btn-row"><button class="btn" id="q-gen">Generate QR code</button><button class="btn secondary" id="q-dl">Download PNG</button></div>
+        <div class="btn-row"><button class="btn" id="q-gen">${ICO().i("qr","ic-sm")} Generate QR code</button><button class="btn secondary" id="q-dl">${ICO().i("download","ic-sm")} Download PNG</button></div>
         <div class="qr-wrap"><canvas id="q-canvas"></canvas></div>
         <p class="hint">Generated fully offline by a built-in QR encoder (byte mode). Scan it with any camera app.</p>
       </div>`;
@@ -411,7 +417,7 @@ window.ToolImpls = window.ToolImpls || {};
               <option value="random">Random harmonious</option>
             </select></div>
         </div>
-        <div class="btn-row"><button class="btn" id="col-gen">Generate palette</button><button class="btn secondary" id="col-copy-all">Copy all HEX</button></div>
+        <div class="btn-row"><button class="btn" id="col-gen">${ICO().i("refresh","ic-sm")} Generate palette</button><button class="btn secondary" id="col-copy-all">${ICO().i("copy","ic-sm")} Copy all HEX</button></div>
         <div class="palette-swatches" id="col-out"></div>
         <p class="hint">Click a swatch to copy its HEX value.</p>
       </div>`;

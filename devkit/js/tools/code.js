@@ -1,6 +1,8 @@
 /* ============ Code & Encoding tools ============ */
 window.ToolImpls = window.ToolImpls || {};
 (function () {
+  const ICO = () => window.DKIcons;
+
   const D = window.DK;
 
   /* ---------- generic encode/decode IO ---------- */
@@ -15,8 +17,8 @@ window.ToolImpls = window.ToolImpls || {};
         </div>
         <div class="btn-row">
           ${cfg.actions.map((a, i) => `<button class="btn ${i ? "secondary" : ""}" data-act="${i}">${a}</button>`).join("")}
-          <button class="btn secondary" id="c-copy">Copy output</button>
-          <button class="btn secondary" id="c-sample">Load sample</button>
+          <button class="btn secondary" id="c-copy">${ICO().i("copy","ic-sm")} Copy output</button>
+          <button class="btn secondary" id="c-sample">${ICO().i("file","ic-sm")} Load sample</button>
         </div>
         <div id="c-status"></div>
       </div>`;
@@ -30,7 +32,7 @@ window.ToolImpls = window.ToolImpls || {};
         out.innerHTML = cfg.highlight ? cfg.highlight(last) : D.esc(last);
       } catch (e) {
         last = ""; out.textContent = "";
-        st.innerHTML = `<div class="status err">✗ ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelectorAll("[data-act]").forEach(b => b.onclick = () => run(+b.dataset.act));
@@ -137,7 +139,7 @@ window.ToolImpls = window.ToolImpls || {};
         <pre class="code-out" id="r-hl"></pre>
         <label class="field">Match details</label>
         <div id="r-table"></div>
-        <div class="btn-row"><button class="btn secondary" id="r-replace-btn">Show replace preview</button></div>
+        <div class="btn-row"><button class="btn secondary" id="r-replace-btn">${ICO().i("swap","ic-sm")} Show replace preview</button></div>
         <div id="r-replace" style="display:none">
           <div class="inline-inputs">
             <div><label class="field">Replace with ($1, $2 supported)</label><input type="text" id="r-rep" value="[masked-$1]@$2"></div>
@@ -152,7 +154,7 @@ window.ToolImpls = window.ToolImpls || {};
       let re;
       try { re = new RegExp(pat.value, flags.value.includes("g") ? flags.value : flags.value + "g"); }
       catch (e) {
-        st.innerHTML = `<div class="status err">✗ Invalid regex: ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Invalid regex: ${D.esc(e.message)}</div>`;
         hl.innerHTML = D.esc(str.value); table.innerHTML = ""; return;
       }
       st.innerHTML = "";
@@ -172,7 +174,7 @@ window.ToolImpls = window.ToolImpls || {};
         ? `<table class="data"><tr><th>#</th><th>Index</th><th>Match</th><th>Groups</th><th>Named</th></tr>` +
           matches.map((m, i) => `<tr><td>${i + 1}</td><td>${m.index}</td><td>${D.esc(m[0])}</td><td>${m.slice(1).map(g => g === undefined ? "—" : D.esc(g)).join(", ") || "—"}</td><td>${Object.keys(m.groups || {}).length ? D.esc(JSON.stringify(m.groups)) : "—"}</td></tr>`).join("") +
           `</table><p class="hint">${matches.length} match${matches.length === 1 ? "" : "es"} found.</p>`
-        : `<div class="status warn">No matches.</div>`;
+        : `<div class="status warn">${ICO().i("alert","ic-sm")} No matches.</div>`;
       const repOut = ui.querySelector("#r-rep-out");
       if (repOut) try { repOut.textContent = text.replace(new RegExp(pat.value, flags.value), ui.querySelector("#r-rep").value); } catch (e) {}
     }

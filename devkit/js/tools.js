@@ -7,7 +7,6 @@ window.DevKit = (function () {
     {
       id: "json",
       name: "JSON Tools",
-      icon: "{ }",
       tools: [
         { id: "json-formatter",  name: "JSON Formatter",          desc: "Pretty-print & beautify JSON with syntax highlighting.", keywords: "json formatter beautifier prettify online" },
         { id: "json-validator",  name: "JSON Validator",          desc: "Validate JSON and get exact error line & column.",     keywords: "json validator check validate online" },
@@ -20,7 +19,6 @@ window.DevKit = (function () {
     {
       id: "jwt",
       name: "JWT Tools",
-      icon: "🔑",
       tools: [
         { id: "jwt-decoder",   name: "Free JWT Decoder Online", desc: "Decode any JWT — header, payload & signature in one click.", keywords: "jwt decoder online base64url decode token" },
         { id: "jwt-generator", name: "JWT Generator",           desc: "Create signed HS256 JWTs right in your browser.",          keywords: "jwt generator online sign token hs256" },
@@ -31,7 +29,6 @@ window.DevKit = (function () {
     {
       id: "code",
       name: "Code & Encoding",
-      icon: "</>",
       tools: [
         { id: "base64",         name: "Base64 Encoder / Decoder", desc: "Encode or decode Base64 text instantly.",        keywords: "base64 encode decode online" },
         { id: "url-encoder",    name: "URL Encoder / Decoder",    desc: "Percent-encode or decode URLs and query strings.", keywords: "url encoder percent encoding escape" },
@@ -45,7 +42,6 @@ window.DevKit = (function () {
     {
       id: "generators",
       name: "Generators",
-      icon: "⚡",
       tools: [
         { id: "uuid",            name: "UUID Generator",            desc: "Generate v4 UUIDs (RFC 4122) in bulk.",      keywords: "uuid generator v4 guid online" },
         { id: "password",        name: "Password Generator",        desc: "Strong random passwords with entropy meter.", keywords: "password generator secure random" },
@@ -58,7 +54,6 @@ window.DevKit = (function () {
     {
       id: "timestamp",
       name: "Time & Date",
-      icon: "🕒",
       tools: [
         { id: "unix-timestamp",   name: "Unix Timestamp Converter", desc: "Unix seconds/milliseconds ↔ human date.",   keywords: "unix timestamp converter epoch now" },
         { id: "date-to-timestamp",name: "Date → Timestamp",         desc: "Pick a date, get its Unix timestamp.",       keywords: "date to unix timestamp converter" },
@@ -103,15 +98,17 @@ window.DevKit = (function () {
     "timezone-converter": ["unix-timestamp", "date-to-timestamp", "timestamp-to-date", "jwt-decoder"]
   };
 
+  const IC = () => window.DKIcons;
+
   /* ---------- shell rendering ---------- */
   function renderHeader(activeId) {
     const nav = document.getElementById("dk-nav");
     if (!nav) return;
     nav.innerHTML = categories.map(c => `
       <div class="nav-group">
-        <button class="nav-group-btn" data-cat="${c.id}">${c.icon} ${c.name}</button>
+        <button class="nav-group-btn" data-cat="${c.id}">${IC().catIconHTML(c.id, 20)} <span>${c.name}</span></button>
         <div class="nav-drop">
-          ${c.tools.map(t => `<a href="#/${t.id}" class="${t.id === activeId ? "active" : ""}">${t.name}</a>`).join("")}
+          ${c.tools.map(t => `<a href="#/${t.id}" class="${t.id === activeId ? "active" : ""}">${IC().icon(t.id, 24)}<span>${t.name}</span></a>`).join("")}
         </div>
       </div>`).join("");
     nav.querySelectorAll(".nav-group-btn").forEach(btn => {
@@ -123,6 +120,14 @@ window.DevKit = (function () {
       });
     });
     document.addEventListener("click", () => document.querySelectorAll(".nav-drop.open").forEach(d => d.classList.remove("open")));
+    // mobile hamburger
+    const burger = document.getElementById("dk-burger");
+    if (burger) {
+      burger.onclick = e => {
+        e.stopPropagation();
+        document.body.classList.toggle("nav-open");
+      };
+    }
   }
 
   function relatedToolsHTML(toolId) {
@@ -130,11 +135,12 @@ window.DevKit = (function () {
     if (!ids.length) return "";
     return `
       <section class="related">
-        <h2>Related tools you might need</h2>
+        <h2>${IC().i("arrow", "h-ic")} Related tools you might need</h2>
         <div class="related-grid">
           ${ids.map(id => {
             const t = toolMap[id];
             return `<a class="related-card" href="#/${id}">
+              ${IC().icon(id, 34)}
               <strong>${t.name}</strong>
               <span>${t.desc}</span>
             </a>`;
@@ -148,13 +154,17 @@ window.DevKit = (function () {
     if (!f) return;
     f.innerHTML = `
       <div class="footer-cols">
+        <div class="footer-brand">
+          <div class="logo">${IC().icon("", 34)}<span><span class="dk-badge">DevKit</span><small>Free Online Developer Tools</small></span></div>
+          <p>Dozens of fast, privacy-friendly developer tools. Everything runs 100% in your browser — no data ever leaves your machine.</p>
+        </div>
         ${categories.map(c => `
           <div>
-            <h4>${c.name}</h4>
-            ${c.tools.map(t => `<a href="#/${t.id}">${t.name}</a>`).join("")}
+            <h4>${IC().catIconHTML(c.id, 18)} ${c.name}</h4>
+            ${c.tools.map(t => `<a href="#/${t.id}">${IC().icon(t.id, 16)} ${t.name}</a>`).join("")}
           </div>`).join("")}
       </div>
-      <p class="footer-note">DevKit — Free Online Developer Tools. Everything runs 100% in your browser; no data is sent to any server.</p>`;
+      <p class="footer-note">© ${new Date().getFullYear()} DevKit — Free Online Developer Tools. All processing happens client-side.</p>`;
   }
 
   /* ---------- page mount helpers ---------- */
@@ -168,11 +178,16 @@ window.DevKit = (function () {
     renderHeader(toolId);
     main.innerHTML = `
       <article class="tool-page" id="tool-page">
-        <div class="breadcrumb"><a href="#/">DevKit Home</a> › <a href="#/">${t.category.name}</a> › <span>${t.name}</span></div>
-        <h1>${t.name}</h1>
-        <p class="tagline">${t.desc}</p>
+        <div class="breadcrumb"><a href="#/">${IC().i("wrench", "ic-sm")} DevKit Home</a> › <span>${t.category.name}</span> › <span class="crumb-cur">${t.name}</span></div>
+        <header class="tool-head">
+          ${IC().icon(toolId, 52)}
+          <div>
+            <h1>${t.name}</h1>
+            <p class="tagline">${t.desc}</p>
+          </div>
+        </header>
         <div id="tool-ui"></div>
-        <aside class="ad-slot ad-inline" aria-hidden="true">Advertisement space (728×90)</aside>
+        <aside class="ad-slot ad-inline" aria-hidden="true">${IC().i("star", "ic-sm")} Advertisement space (728×90)</aside>
         ${relatedToolsHTML(toolId)}
         <section class="seo-copy" id="seo-copy"></section>
       </article>`;
@@ -190,37 +205,40 @@ window.DevKit = (function () {
     renderHeader(null);
     main.innerHTML = `
       <div class="hero">
-        <h1>DevKit — Free Online Developer Tools</h1>
+        <div class="hero-stickers">${IC().icon("jwt-decoder", 40)}${IC().icon("json-formatter", 40)}${IC().icon("base64", 40)}${IC().icon("uuid", 40)}${IC().icon("qr-code", 40)}${IC().icon("unix-timestamp", 40)}</div>
+        <h1><span class="dk-badge">DevKit</span> — Free Online Developer Tools</h1>
         <p>Dozens of fast, privacy-friendly tools for developers. <strong>Everything runs in your browser</strong> — nothing is uploaded.</p>
-        <input id="home-search" class="search" type="search" placeholder="Search a tool… e.g. “jwt decoder”, “base64”" autofocus>
+        <div class="search-wrap">${IC().i("search", "search-ic")}<input id="home-search" class="search" type="search" placeholder="Search a tool… e.g. “jwt decoder”, “base64”" autocomplete="off"></div>
+        <div class="hero-badges"><span>${IC().i("check", "ic-sm")} 100% client-side</span><span>${IC().i("zap", "ic-sm")} Instant results</span><span>${IC().i("lock", "ic-sm")} No sign-up</span></div>
       </div>
-      <aside class="ad-slot ad-top" aria-hidden="true">Advertisement space (970×250)</aside>
+      <aside class="ad-slot ad-top" aria-hidden="true">${IC().i("star", "ic-sm")} Advertisement space (970×250)</aside>
       <div id="home-cats">
         ${categories.map(c => `
           <section class="cat-block" id="cat-${c.id}">
-            <h2>${c.icon} ${c.name}</h2>
+            <h2>${IC().catIconHTML(c.id, 30)} ${c.name}</h2>
             <div class="tool-grid">
               ${c.tools.map(t => `
                 <a class="tool-card" href="#/${t.id}" data-search="${(t.name + ' ' + t.desc + ' ' + t.keywords).toLowerCase()}">
-                  <strong>${t.name}</strong>
+                  <div class="card-top">${IC().icon(t.id, 42)}<strong>${t.name}</strong></div>
                   <span>${t.desc}</span>
+                  <em class="card-cta">Open tool ${IC().i("arrow", "ic-sm")}</em>
                 </a>`).join("")}
             </div>
           </section>`).join("")}
       </div>
       <section class="popular-seo">
-        <h2>Popular searches we cover</h2>
+        <h2>${IC().i("star", "h-ic")} Popular searches we cover</h2>
         <p>
-          <a href="#/jwt-decoder">free jwt decoder online</a> ·
-          <a href="#/json-formatter">json formatter online</a> ·
-          <a href="#/base64">base64 decode online</a> ·
-          <a href="#/uuid">uuid generator</a> ·
-          <a href="#/unix-timestamp">unix timestamp now</a> ·
-          <a href="#/qr-code">qr code generator free</a> ·
-          <a href="#/hash">md5 hash online</a> ·
-          <a href="#/regex-tester">regex tester</a> ·
-          <a href="#/password">strong password generator</a> ·
-          <a href="#/jwt-validator">jwt verifier online</a>
+          <a href="#/jwt-decoder">${IC().icon("jwt-decoder", 18)} free jwt decoder online</a> ·
+          <a href="#/json-formatter">${IC().icon("json-formatter", 18)} json formatter online</a> ·
+          <a href="#/base64">${IC().icon("base64", 18)} base64 decode online</a> ·
+          <a href="#/uuid">${IC().icon("uuid", 18)} uuid generator</a> ·
+          <a href="#/unix-timestamp">${IC().icon("unix-timestamp", 18)} unix timestamp now</a> ·
+          <a href="#/qr-code">${IC().icon("qr-code", 18)} qr code generator free</a> ·
+          <a href="#/hash">${IC().icon("hash", 18)} md5 hash online</a> ·
+          <a href="#/regex-tester">${IC().icon("regex-tester", 18)} regex tester</a> ·
+          <a href="#/password">${IC().icon("password", 18)} strong password generator</a> ·
+          <a href="#/jwt-validator">${IC().icon("jwt-validator", 18)} jwt verifier online</a>
         </p>
       </section>`;
     const s = document.getElementById("home-search");
@@ -245,7 +263,12 @@ window.DevKit = (function () {
   function init() {
     renderFooter();
     route();
-    window.addEventListener("hashchange", route);
+    window.addEventListener("hashchange", () => { document.body.classList.remove("nav-open"); route(); });
+    // close mobile menu when a nav link is tapped
+    document.addEventListener("click", e => {
+      const a = e.target.closest && e.target.closest("#dk-nav a");
+      if (a) document.body.classList.remove("nav-open");
+    });
   }
 
   return { init, categories, toolMap, related };

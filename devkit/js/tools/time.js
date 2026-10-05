@@ -1,6 +1,8 @@
 /* ============ Timestamp & Timezone tools ============ */
 window.ToolImpls = window.ToolImpls || {};
 (function () {
+  const ICO = () => window.DKIcons;
+
   const D = window.DK;
 
   function fmtDate(d) {
@@ -24,7 +26,7 @@ window.ToolImpls = window.ToolImpls || {};
           <div style="flex:2"><label class="field">Timestamp (seconds or milliseconds)</label>
             <input type="text" id="u-in" placeholder="e.g. 1700000000"></div>
           <div><label class="field">Unit</label><select id="u-unit"><option value="auto">Auto-detect</option><option value="s">Seconds</option><option value="ms">Milliseconds</option></select></div>
-          <div><label class="field">&nbsp;</label><button class="btn" id="u-conv">Convert</button></div>
+          <div><label class="field">&nbsp;</label><button class="btn" id="u-conv">${ICO().i("swap","ic-sm")} Convert</button></div>
         </div>
         <div id="u-status"></div>
         <div id="u-out"></div>
@@ -39,15 +41,15 @@ window.ToolImpls = window.ToolImpls || {};
     function run() {
       const v = ui.querySelector("#u-in").value.trim(), st = ui.querySelector("#u-status"), out = ui.querySelector("#u-out");
       if (!v) { st.innerHTML = ""; out.innerHTML = ""; return; }
-      if (!/^-?\d+$/.test(v)) { st.innerHTML = `<div class="status err">✗ Timestamp must be a whole number.</div>`; out.innerHTML = ""; return; }
+      if (!/^-?\d+$/.test(v)) { st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Timestamp must be a whole number.</div>`; out.innerHTML = ""; return; }
       let n = BigInt(v), unit = ui.querySelector("#u-unit").value;
       if (unit === "auto") unit = Math.abs(Number(v)) > 1e11 ? "ms" : "s"; // ~ after year 5138 in seconds
       const ms = unit === "s" ? Number(n * 1000n) : Number(n);
       const d = new Date(ms);
-      if (isNaN(d.getTime())) { st.innerHTML = `<div class="status err">✗ Out of range date.</div>`; return; }
+      if (isNaN(d.getTime())) { st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Out of range date.</div>`; return; }
       const diffSec = Math.round((Date.now() - ms) / 1000);
       const rel = Math.abs(diffSec) < 60 ? `${diffSec}s` : Math.abs(diffSec) < 3600 ? `${Math.round(diffSec/60)} min` : Math.abs(diffSec) < 86400 ? `${Math.round(diffSec/3600)} h` : `${Math.round(diffSec/86400)} days`;
-      st.innerHTML = `<div class="status ok">✓ Interpreted as <strong>${unit === "s" ? "seconds" : "milliseconds"}</strong> — ${diffSec >= 0 ? rel + " ago" : "in " + rel}.</div>`;
+      st.innerHTML = `<div class="status ok">${ICO().i("check","ic-sm")} Interpreted as <strong>${unit === "s" ? "seconds" : "milliseconds"}</strong> — ${diffSec >= 0 ? rel + " ago" : "in " + rel}.</div>`;
       out.innerHTML = `<table class="data">
         <tr><th>Representation</th><th>Value</th></tr>
         <tr><td>Local time</td><td>${fmtDate(d)}</td></tr>
@@ -86,7 +88,7 @@ window.ToolImpls = window.ToolImpls || {};
       const out = ui.querySelector("#d-out");
       if (!v) { out.innerHTML = `<div class="status warn">Pick a date first.</div>`; return; }
       const dateObj = ui.querySelector("#d-mode").value === "utc" ? new Date(v + "Z") : new Date(v);
-      if (isNaN(dateObj.getTime())) { out.innerHTML = `<div class="status err">✗ Invalid date.</div>`; return; }
+      if (isNaN(dateObj.getTime())) { out.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Invalid date.</div>`; return; }
       lastTs = String(Math.floor(dateObj.getTime() / 1000));
       out.innerHTML = `<table class="data">
         <tr><th>Unix seconds</th><td class="mono">${lastTs}</td></tr>
@@ -121,9 +123,9 @@ window.ToolImpls = window.ToolImpls || {};
       if (unit === "auto") unit = Math.abs(Number(v)) > 1e11 ? "ms" : "s";
       const ms = unit === "s" ? Number(v) * 1000 : Number(v);
       const d = new Date(ms);
-      if (isNaN(d.getTime())) { out.innerHTML = `<div class="status err">✗ Out of range.</div>`; return; }
+      if (isNaN(d.getTime())) { out.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Out of range.</div>`; return; }
       out.innerHTML = `
-        <div class="status ok">✓ ${unit === "s" ? "Seconds" : "Milliseconds"} → readable date</div>
+        <div class="status ok">${ICO().i("check","ic-sm")} ${unit === "s" ? "Seconds" : "Milliseconds"} → readable date</div>
         <table class="data">
           <tr><th>Local</th><td>${fmtDate(d)}</td></tr>
           <tr><th>UTC</th><td>${d.toUTCString()}</td></tr>
@@ -196,7 +198,7 @@ window.ToolImpls = window.ToolImpls || {};
       const diffH = (instant.getTime() - Date.UTC(y, mo - 1, da, hh, mm)) / 3600000;
       const sameDay = p.da === da && p.mo === mo && p.y === y;
       out.innerHTML = `
-        <div class="status ok">✓ <strong>${from}</strong> ${pad(hh)}:${pad(mm)}, ${da}/${mo}/${y}
+        <div class="status ok">${ICO().i("check","ic-sm")} <strong>${from}</strong> ${pad(hh)}:${pad(mm)}, ${da}/${mo}/${y}
           &nbsp;→&nbsp; <strong>${to}</strong> <span style="font-size:17px">${pad(p.hh)}:${pad(p.mm)}, ${p.da}/${p.mo}/${p.y}</span>
           ${sameDay ? "" : `<em>(next day: ${p.da}/${p.mo})</em>`}</div>
         <table class="data">

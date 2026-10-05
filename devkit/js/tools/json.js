@@ -1,6 +1,8 @@
 /* ============ JSON tool family ============ */
 window.ToolImpls = window.ToolImpls || {};
 (function () {
+  const ICO = () => window.DKIcons;
+
   const D = window.DK;
 
   function ioPanel(ui, opts) {
@@ -18,8 +20,8 @@ window.ToolImpls = window.ToolImpls || {};
         </div>
         <div class="btn-row">
           ${opts.buttons.map((b, i) => `<button class="btn ${i ? "secondary" : ""}" data-act="${i}">${b.label}</button>`).join("")}
-          <button class="btn secondary" id="j-copy">Copy output</button>
-          <button class="btn secondary" id="j-sample">Load sample</button>
+          <button class="btn secondary" id="j-copy">${ICO().i("copy","ic-sm")} Copy output</button>
+          <button class="btn secondary" id="j-sample">${ICO().i("file","ic-sm")} Load sample</button>
         </div>
         <div id="j-status"></div>
       </div>`;
@@ -76,17 +78,17 @@ window.ToolImpls = window.ToolImpls || {};
       <div class="tool-panel">
         <label class="field">JSON to validate</label>
         <textarea id="v-in" spellcheck="false" placeholder='{"paste": "your json here"}'></textarea>
-        <div class="btn-row"><button class="btn" id="v-run">Validate JSON</button><button class="btn secondary" id="v-sample">Load sample</button></div>
+        <div class="btn-row"><button class="btn" id="v-run">${ICO().i("check","ic-sm")} Validate JSON</button><button class="btn secondary" id="v-sample">${ICO().i("file","ic-sm")} Load sample</button></div>
         <div id="v-status"></div>
       </div>`;
     const inp = ui.querySelector("#v-in"), st = ui.querySelector("#v-status");
     function run() {
       const raw = inp.value;
-      if (!raw.trim()) { st.innerHTML = `<div class="status warn">Enter some text to validate.</div>`; return; }
+      if (!raw.trim()) { st.innerHTML = `<div class="status warn">${ICO().i("alert","ic-sm")} Enter some text to validate.</div>`; return; }
       try {
         JSON.parse(raw);
         const size = new Blob([raw]).size;
-        st.innerHTML = `<div class="status ok">✓ Valid JSON (${size.toLocaleString()} bytes, ${raw.split("\n").length} lines). Ready to use!</div>`;
+        st.innerHTML = `<div class="status ok">${ICO().i("check","ic-sm")} Valid JSON (${size.toLocaleString()} bytes, ${raw.split("\n").length} lines). Ready to use!</div>`;
       } catch (e) {
         const posMatch = e.message.match(/position (\d+)/i);
         let loc = "";
@@ -94,7 +96,7 @@ window.ToolImpls = window.ToolImpls || {};
           const p = +posMatch[1], upto = raw.slice(0, p);
           loc = ` at line ${upto.split("\n").length}, column ${p - upto.lastIndexOf("\n")}`;
         }
-        st.innerHTML = `<div class="status err">✗ Invalid JSON${loc}: ${D.esc(e.message)}</div>`;
+        st.innerHTML = `<div class="status err">${ICO().i("x","ic-sm")} Invalid JSON${loc}: ${D.esc(e.message)}</div>`;
       }
     }
     ui.querySelector("#v-run").onclick = run;
